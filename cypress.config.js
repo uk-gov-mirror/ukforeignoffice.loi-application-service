@@ -1,19 +1,32 @@
-const { defineConfig } = require('cypress')
+const { defineConfig } = require("cypress");
+const { addCucumberPreprocessorPlugin } = require("@badeball/cypress-cucumber-preprocessor");
+const { createEsbuildPlugin } = require("@badeball/cypress-cucumber-preprocessor/esbuild");
+const createBundler = require("@bahmutov/cypress-esbuild-preprocessor");
+require('dotenv').config(); // Load from root
+
+
+async function setupNodeEvents(on, config) {
+  await addCucumberPreprocessorPlugin(on, config);
+  on(
+    "file:preprocessor",
+    createBundler({
+      plugins: [createEsbuildPlugin(config)],
+    })
+  );
+  return config;
+}
 
 module.exports = defineConfig({
-  chromeWebSecurity: false,
-  video: false,
-  reporter: 'junit',
-  reporterOptions: {
-    mochaFile: 'a11y-test-results.xml',
-    toConsole: true,
-  },
   e2e: {
-    // We've imported your old cypress plugins here.
-    // You may want to clean this up later by importing these.
-    setupNodeEvents(on, config) {
-      return require('./cypress/plugins/index.js')(on, config)
-    },
     baseUrl: 'https://integration.legalisation.fcodev.org.uk/',
+    specPattern: "**/*.feature",
+    setupNodeEvents,
+    chromeWebSecurity: false,
+    video: false,
+    filterSpecs: true,
+    env: {
+      email: process.env.CYPRESS_EMAIL,
+      password: process.env.CYPRESS_PASSWORD,
+    },
   },
-})
+});

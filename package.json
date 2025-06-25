@@ -105,6 +105,10 @@
         "winston": "^3.17.0"
     },
     "devDependencies": {
+        "@badeball/cypress-cucumber-preprocessor": "^22.0.1",
+        "@bahmutov/cypress-esbuild-preprocessor": "^2.2.4",
+        "@cucumber/gherkin": "^32.1.0",
+        "@cucumber/messages": "^27.2.0",
         "@testing-library/cypress": "^10.0.2",
         "assert": "^2.1.0",
         "aws-sdk-client-mock": "^3.0.1",
