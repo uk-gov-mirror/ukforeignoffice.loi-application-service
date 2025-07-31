@@ -90,6 +90,10 @@ module.exports = function(sequelize, DataTypes) {
         submission_destination: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        priority_post: {
+          type: DataTypes.BOOLEAN,
+          allowNull: true
         }
   })
 };

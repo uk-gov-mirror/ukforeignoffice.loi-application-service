@@ -321,9 +321,9 @@ const ApplicationTypeController = {
                                             res
                                         );
 
-                                        return res.redirect(
-                                            '/choose-documents-or-skip?pk_campaign=Standard-Service&pk_kwd=Standard'
-                                        );
+                                      return res.redirect(
+                                        '/priority-postal-service'
+                                      );
                                     }
 
                                     if (electronicApp) {

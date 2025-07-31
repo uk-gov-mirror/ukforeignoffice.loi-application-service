@@ -1,0 +1,57 @@
+<%
+pageTitle = "Priority postal service selection"
+%>
+
+<div class="inner_header <% if (!user_data.loggedIn) { %>no-user-signed-in<% } %>">
+    <a href="/start?from=<%= user_data.loggedIn ? 'dashboard' : 'home' %>" class="back-to-previous govuk-link">Back</a>
+    <%- partial('../partials/inner-header.ejs') %>
+
+    <% if (!user_data.loggedIn) { %>
+        <div class="inner-header-content">
+      <span class="email-logout-text">
+        <a href="<%= sails.config.customURLs.userServiceURL %>/sign-in?from=docChecker&next=continueDocChecker" class="govuk-link">Sign in</a>
+      </span>
+        </div>
+    <% } %>
+</div>
+
+<h1 class="govuk-heading-xl">Priority postal service</h1>
+
+<div class="article-container group">
+    <div class="inner">
+        <div class="intro column-two-thirds">
+            <form action="/priority-postal-service-selection" method="post" class="govuk-form-group">
+
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                        <p class="govuk-body">
+                            Would you like to use the priority postal service? It can speed up how quickly we process your application.
+                        </p>
+                    </legend>
+
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        <div class="govuk-checkboxes__item">
+                            <input
+                                    class="govuk-checkboxes__input"
+                                    type="checkbox"
+                                    id="priority-postal-service-selection"
+                                    name="priority-postal-service-selection"
+                                    value="on"
+                                    <% if (user_selection === true) { %>checked<% } %>>
+                            <label class="govuk-label govuk-checkboxes__label" for="priority-postal-service-selection">
+                                Yes – I want to use the priority postal service
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <br>
+
+                <button type="submit" id="NextBtn" class="govuk-button" data-module="govuk-button">
+                    <% if(!req.session.summary){%>Continue<%}else{%>Save and return to summary<% } %>
+                </button>
+
+            </form>
+        </div>
+    </div>
+</div>

@@ -55,7 +55,8 @@ var config = {
             notificationBannerText: live_variables.notificationBannerText || '',
             standardAppPrice: live_variables.standardAppPrice,
             urgentAppPrice: live_variables.urgentAppPrice,
-            dropOffAppPrice: live_variables.dropOffAppPrice
+            dropOffAppPrice: live_variables.dropOffAppPrice,
+            priorityAppPrice: live_variables.priorityAppPrice
         }
     },
     "customURLs": {

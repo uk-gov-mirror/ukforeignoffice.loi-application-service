@@ -999,17 +999,22 @@ var HelperService ={
     },
 
     getAppPrice: function(req) {
-        const priceMapping = {
-            1: req._sails.config.views.locals.standardAppPrice,
-            2: req._sails.config.views.locals.urgentAppPrice,
-            3: req._sails.config.views.locals.dropOffAppPrice,
-            4: req._sails.config.upload.cost_per_document
-        };
+      const appType = req.session.appType;
 
-        const appType = req.session.appType;
-        const price = priceMapping[appType];
+      // Handle special case: standard app with priority postal service
+      if (appType === 1 && req.session.priorityPostalService === true) {
+        return req._sails.config.views.locals.priorityAppPrice;
+      }
 
-        return Number(price) || 100; //set a default value
+      const priceMapping = {
+        1: req._sails.config.views.locals.standardAppPrice,
+        2: req._sails.config.views.locals.urgentAppPrice,
+        3: req._sails.config.views.locals.dropOffAppPrice,
+        4: req._sails.config.upload.cost_per_document
+      };
+
+      const price = priceMapping[appType];
+      return Number(price) || 100;
     }
 
 };

@@ -42,7 +42,9 @@ module.exports.routes = {
     '/new-application'                              :   'ApplicationTypeController.newApplication',
     '/change-application-type'                      :   'ApplicationTypeController.serviceSelectorPage',
 
-
+    // Priority postal service
+    '/priority-postal-service'                      :   'PriorityPostalServiceController.priorityPostalService',
+    '/priority-postal-service-selection'            :   'PriorityPostalServiceController.priorityPostalServiceSelection',
 
     ///////////////////////////////////////////////////////////////////////
     // ---- Document Selector, Eligibility and Certification Checks ---- //

@@ -51,7 +51,8 @@ var DocumentsQuantityCtrl = {
                     altAddress: req.session.altAddress,
                     summary: req.session.summary,
                     user_data: HelperService.getUserData(req,res),
-                    maxNumOfDocuments: maxNumOfDocuments
+                    maxNumOfDocuments: maxNumOfDocuments,
+                    priority_postal_app: req.session.priorityPostalService
                 });
             }else{
                 var nextPage='documentQuantity';
@@ -213,7 +214,8 @@ var DocumentsQuantityCtrl = {
                 altAddress: req.session.altAddress,
                 summary: req.session.summary,
                 user_data: HelperService.getUserData(req,res),
-                maxNumOfDocuments: maxNumOfDocuments
+                maxNumOfDocuments: maxNumOfDocuments,
+                priority_postal_app: req.session.priorityPostalService
               });
             })
             .catch(function(error){
