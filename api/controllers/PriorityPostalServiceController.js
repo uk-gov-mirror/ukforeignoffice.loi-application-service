@@ -50,7 +50,7 @@ let priorityPostalServiceController = {
         '/choose-documents-or-skip?pk_campaign=Standard-Service&pk_kwd=Standard'
       );
     } else {
-      // todo need to update total price as well
+
       const selectedDocCount = await UserDocumentCount.findOne({
         where: { application_id: req.session.appId }
       });

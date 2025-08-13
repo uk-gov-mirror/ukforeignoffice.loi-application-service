@@ -442,7 +442,7 @@ var applicationController = {
                     var customer_ref =
                         results?.AdditionalApplicationInfo?.user_ref ?? null;
 
-                    Application.update(
+                  Application.update(
                         {
                             application_guid: token,
                         },
