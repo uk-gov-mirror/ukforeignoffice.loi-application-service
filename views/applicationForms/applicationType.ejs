@@ -134,6 +134,19 @@
                         </div>
                     </details>
                 </div>
+                    <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="choose-priority-service" name="choose-a-service" type="radio" value="priority" aria-describedby="no-service-chosen-error">
+                        <label class="govuk-label govuk-radios__label" for="choose-priority-service">
+                            <h2 class="heading-medium govuk-!-margin-top-0">Priority Postal Service</h2>
+                        </label>
+                        <div class="govuk-!-padding-left-3">
+                            <ul class="govuk-list govuk-list--bullet govuk-list--spaced govuk-!-margin-bottom-0">
+                                <li>Very fast</li>
+                                <li>Very expensive</li>
+                                <li>Get your application processed within <%= sails.config.views.locals.numOfWorkingDaysEapp %> working days *</li>
+                            </ul>
+                        </div>
+                    </div>
                 <div class="govuk-radios__item">
                     <input class="govuk-radios__input" id="choose-eApp-service" name="choose-a-service" type="radio" value="eApostille" aria-describedby="no-service-chosen-error">
                     <label class="govuk-label govuk-radios__label" for="choose-eApp-service">

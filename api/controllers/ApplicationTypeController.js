@@ -117,6 +117,7 @@ const ApplicationTypeController = {
         const servicePages = {
             eApostille: '/new-application?app_type_group=4',
             standard: '/new-application?app_type_group=1',
+            priority: '/new-application?app_type_group=5',
             premium: '/new-application?app_type_group=2',
             dropoff: '/new-application?app_type_group=3',
             default: '/select-service',
@@ -220,191 +221,151 @@ const ApplicationTypeController = {
      * @return res.view
      */
     newApplication: function (req, res) {
-        const company_name =
-            req.session.user &&
-            (req.session.user.premiumServiceEnabled || req.session.user.dropOffEnabled)
-                ? req.session.account.company_name
-                : 'N/A';
-        const loggedIn = HelperService.LoggedInStatus(req);
-        let selectedServiceType = req.param('app_type_group');
+      const company_name =
+        req.session.user &&
+        (req.session.user.premiumServiceEnabled || req.session.user.dropOffEnabled)
+          ? req.session.account.company_name
+          : 'N/A';
 
-        if (typeof selectedServiceType === 'undefined') {
-            selectedServiceType = 'not ok';
-        }
+      const loggedIn = HelperService.LoggedInStatus(req);
 
-        const premiumService = '2';
-        const dropOffService = '3';
-        const premiumOrDropoffPageSelected = [premiumService, dropOffService].includes(
-            selectedServiceType
-        );
-        if (premiumOrDropoffPageSelected && !loggedIn) {
-            return res.redirect(
-                sails.config.customURLs.userServiceURL +
-                    '/usercheck?next=premiumCheck'
-            );
-        }
+      let selectedServiceType = req.param('app_type_group');
+      if (typeof selectedServiceType === 'undefined') {
+        selectedServiceType = 'not ok';
+      }
 
-        /**
-         * Check the last application reference to ensure a unique reference is assigned to each new application.
-         */
-        ApplicationReference.findOne()
-            .then(function (data) {
-                const uniqueApplicationId =
-                    HelperService.generateNewApplicationId(
-                        data,
-                        selectedServiceType
-                    );
+      // Constants as strings (req.param returns strings)
+      const premiumService = '2';
+      const dropOffService = '3';
 
-                /**
-                 * Query db for generated applicationid.  If none returned, application id is indeed unique.
-                 * set a dummy value for the service type, as this will get changed on Page 2 when the user has actually chosen a service type
-                 */
-                return sequelize
-                    .query(
-                        'SELECT unique_app_id FROM "Application" WHERE unique_app_id = \'' +
-                            uniqueApplicationId +
-                            "';"
-                    )
-                    .then(function ([result]) {
-                        let user_id;
-                        // add this to overcome issue with users coming from user management site
-                        // where they must register.  registration/login disabled for now.
-                        const userLoggedIn = HelperService.LoggedInStatus(req)
-                        if (userLoggedIn) {
-                            user_id = req.session.passport.user;
-                        } else {
-                            user_id = 0;
-                        }
+      const premiumOrDropoffPageSelected = [premiumService, dropOffService].includes(selectedServiceType);
+      if (premiumOrDropoffPageSelected && !loggedIn) {
+        return res.redirect(sails.config.customURLs.userServiceURL + '/usercheck?next=premiumCheck');
+      }
 
-                        if (result.length !== 0) {
-                            sails.log.warn(
-                                'ID already taken, redirecting back to start page'
-                            );
+      // Priority: map 5 -> 1, keep a flag for reporting
+      const priorityApp = selectedServiceType === '5';
+      const normalisedServiceType = priorityApp ? '1' : selectedServiceType;
+      req.session.priorityPostalService = priorityApp;
 
-                            res.redirect('/start');
+      /**
+       * Check the last application reference to ensure a unique reference is assigned to each new application.
+       */
+      ApplicationReference.findOne()
+        .then(function (data) {
+          const uniqueApplicationId = HelperService.generateNewApplicationId(data, normalisedServiceType);
 
-                            throw new Error('ID already taken');
-                        } else {
-                            return Application.create({
-                                serviceType: selectedServiceType,
-                                unique_app_id: uniqueApplicationId,
-                                all_info_correct: '-1',
-                                user_id,
-                                submitted: 'draft',
-                                company_name,
-                                feedback_consent: 0, // set initial value to false to allow create to work
-                                doc_reside_EU: 0,
-                                residency: 0,
-                                submission_destination: 'ORBIT'
-                            })
-                                .then(async (created) => {
-                                    //wipe other session variables
-                                    req.session.selectedDocs = '';
-                                    req.session.return_address = '';
-                                    req.session.appId = false;
-                                    req.session.appSubmittedStatus = false;
+          // Check uniqueness
+          return sequelize
+            .query(
+              `SELECT unique_app_id FROM "Application" WHERE unique_app_id = '${uniqueApplicationId}';`
+            )
+            .then(function ([result]) {
+              // User id (0 if not logged in)
+              const userLoggedIn = HelperService.LoggedInStatus(req);
+              const user_id = userLoggedIn ? req.session.passport.user : 0;
 
-                                    // Save APPID and ServiceType as NEW sessions
-                                    req.session.appId = created.application_id;
-                                    req.session.appType = parseInt(
-                                        req.param('app_type_group')
-                                    );
+              if (result.length !== 0) {
+                sails.log.warn('ID already taken, redirecting back to start page');
+                res.redirect('/start');
+                throw new Error('ID already taken');
+              }
 
-                                    const paperApp = req.session.appType === 1;
-                                    const electronicApp = req.session.appType === 4;
+              // Create using the NORMALISED type (priority becomes 1)
+              return Application.create({
+                serviceType: normalisedServiceType,
+                unique_app_id: uniqueApplicationId,
+                all_info_correct: '-1',
+                user_id,
+                submitted: 'draft',
+                company_name,
+                feedback_consent: 0,
+                doc_reside_EU: 0,
+                residency: 0,
+                submission_destination: 'ORBIT',
+                priority_post: priorityApp
+              })
+                .then(async (created) => {
+                  // Wipe other session vars
+                  req.session.selectedDocs = '';
+                  req.session.return_address = '';
+                  req.session.appId = false;
+                  req.session.appSubmittedStatus = false;
 
-                                    if (paperApp) {
-                                        req.session.summary = false; // Reset summary session variable
-                                        req.session.useDetails = true;
-                                        HelperService.resetAddressSessionVariables(
-                                            req,
-                                            res
-                                        );
+                  // Save APPID and (normalised) ServiceType
+                  req.session.appId = created.application_id;
+                  req.session.appType = normalisedServiceType; // always a string '1','2','3','4',...
 
-                                      return res.redirect(
-                                        '/priority-postal-service'
-                                      );
-                                    }
+                  // Compare as strings
+                  const paperApp = req.session.appType === '1';
+                  const electronicApp = req.session.appType === '4';
 
-                                    if (electronicApp) {
-                                        req.session.eApp = {
-                                          s3FolderName: '',
-                                          uploadedFileData: [],
-                                          userRef: '',
-                                        };
-                                        return res.redirect('/before-you-apply');
-                                    }
+                  if (paperApp) {
+                    // Priority has been mapped to standard (1) but we still mark priority_post=true
+                    req.session.summary = false;
+                    req.session.useDetails = true;
+                    HelperService.resetAddressSessionVariables(req, res);
 
-                                    const addUserDataSuccess = await addUserDataToDB(req, res);
-                                    if (!addUserDataSuccess) {
-                                      return
-                                    }
+                    return res.redirect('/choose-documents-or-skip?pk_campaign=Standard-Service&pk_kwd=Standard');
+                  }
 
-                                    const redirectBasedOnServiceType = {
-                                        2: '/business-document-quantity?pk_campaign=Premium-Service&pk_kwd=Premium',
-                                        3: '/business-document-quantity?pk_campaign=DropOff-Service&pk_kwd=DropOff',
-                                    };
+                  if (electronicApp) {
+                    req.session.eApp = {
+                      s3FolderName: '',
+                      uploadedFileData: [],
+                      userRef: '',
+                    };
+                    return res.redirect('/before-you-apply');
+                  }
 
-                                    const redirectUrl =
-                                        redirectBasedOnServiceType[
-                                            req.session.appType
-                                        ];
+                  const addUserDataSuccess = await addUserDataToDB(req, res);
+                  if (!addUserDataSuccess) {
+                    return;
+                  }
 
-                                    if (redirectUrl) {
-                                        return res.redirect(redirectUrl);
-                                    }
+                  const redirectBasedOnServiceType = {
+                    '2': '/business-document-quantity?pk_campaign=Premium-Service&pk_kwd=Premium',
+                    '3': '/business-document-quantity?pk_campaign=DropOff-Service&pk_kwd=DropOff',
+                  };
 
-                                    sails.log.error(
-                                        'serviceType number not found'
-                                    );
-                                    return res.serverError();
-                                })
-                                .catch(function (error) {
-                                    sails.log.error(`${error}`);
+                  const redirectUrl = redirectBasedOnServiceType[req.session.appType];
+                  if (redirectUrl) {
+                    return res.redirect(redirectUrl);
+                  }
 
-                                    var erroneousFields = [];
-                                    if (
-                                        !selectedServiceType ||
-                                        selectedServiceType === 'not ok'
-                                    ) {
-                                        erroneousFields.push('app_type_group');
-                                    }
+                  sails.log.error('serviceType number not found');
+                  return res.serverError();
+                })
+                .catch(function (error) {
+                  sails.log.error(`${error}`);
 
-                                    return res.view(
-                                        'applicationForms/applicationType.ejs',
-                                        {
-                                            application_id: req.session.appId,
-                                            userServiceURL:
-                                                sails.config.customURLs
-                                                    .userServiceURL,
-                                            error_report:
-                                                ValidationService.validateForm({
-                                                    error: error,
-                                                    erroneousFields:
-                                                        erroneousFields,
-                                                }),
-                                            form_values: false,
-                                            update: false,
-                                            submit_status:
-                                                req.session.appSubmittedStatus,
-                                            current_uri: req.originalUrl,
-                                            user_data:
-                                                HelperService.getUserData(
-                                                    req,
-                                                    res
-                                                ),
-                                        }
-                                    );
-                                });
-                        }
-                    });
-            })
-            .catch(function (error) {
-                sails.log.error(error);
+                  const erroneousFields = [];
+                  if (!normalisedServiceType || normalisedServiceType === 'not ok') {
+                    erroneousFields.push('app_type_group');
+                  }
+
+                  return res.view('applicationForms/applicationType.ejs', {
+                    application_id: req.session.appId,
+                    userServiceURL: sails.config.customURLs.userServiceURL,
+                    error_report: ValidationService.validateForm({
+                      error: error,
+                      erroneousFields: erroneousFields,
+                    }),
+                    form_values: false,
+                    update: false,
+                    submit_status: req.session.appSubmittedStatus,
+                    current_uri: req.originalUrl,
+                    user_data: HelperService.getUserData(req, res),
+                  });
+                });
             });
+        })
+        .catch(function (error) {
+          sails.log.error(error);
+        });
     },
 
-    /**
+  /**
      * @function populateApplicationType()
      * @description Populate the Application Type form with the relevent information as an update is being performed.
      * @param req

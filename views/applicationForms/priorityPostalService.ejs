@@ -22,33 +22,42 @@ pageTitle = "Priority postal service selection"
         <div class="intro column-two-thirds">
             <form action="/priority-postal-service-selection" method="post" class="govuk-form-group">
 
-                <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                        <p class="govuk-body">
-                            Would you like to use the priority postal service? It can speed up how quickly we process your application. It costs £<%= req._sails.config.views.locals.priorityAppPrice %>.
-                        </p>
-                    </legend>
+                <% if (priorityServiceEnabled) { %>
+                    <fieldset class="govuk-fieldset">
+                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                            <p class="govuk-body">
+                                Would you like to use the priority postal service? It can speed up how quickly we process your application. It costs £<%= req._sails.config.views.locals.priorityAppPrice %>.
+                            </p>
+                        </legend>
 
-                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                        <div class="govuk-checkboxes__item">
-                            <input
-                                    class="govuk-checkboxes__input"
-                                    type="checkbox"
-                                    id="priority-postal-service-selection"
-                                    name="priority-postal-service-selection"
-                                    value="on"
-                                    <% if (user_selection === true) { %>checked<% } %>>
-                            <label class="govuk-label govuk-checkboxes__label" for="priority-postal-service-selection">
-                                Yes – I want to use the priority postal service
-                            </label>
+                        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                            <div class="govuk-checkboxes__item">
+                                <input
+                                        class="govuk-checkboxes__input"
+                                        type="checkbox"
+                                        id="priority-postal-service-selection"
+                                        name="priority-postal-service-selection"
+                                        value="on"
+                                        <% if (user_selection === true) { %>checked<% } %>>
+                                <label class="govuk-label govuk-checkboxes__label" for="priority-postal-service-selection">
+                                    Yes – I want to use the priority postal service
+                                </label>
+                            </div>
                         </div>
+                    </fieldset>
+                <% } else { %>
+
+                    <div class="govuk-inset-text">
+                        Unfortunately, there are no more slots available for priority postage. Please continue.
                     </div>
-                </fieldset>
+
+                    <input type="hidden" name="priority-postal-service-selection" value="off">
+                <% } %>
 
                 <br>
 
                 <button type="submit" id="NextBtn" class="govuk-button" data-module="govuk-button">
-                    <% if(!req.session.summary){%>Continue<%}else{%>Save and return to summary<% } %>
+                    <% if (!req.session.summary) { %>Continue<% } else { %>Save and return to summary<% } %>
                 </button>
 
             </form>

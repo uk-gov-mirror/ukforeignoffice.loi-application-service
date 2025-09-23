@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
 
-  return sequelize.define('ApplicationType', {
+  return sequelize.define('ApplicationTypes', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true
@@ -15,6 +15,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     createdAt: {
       type: DataTypes.VIRTUAL,
+      allowNull: true
+    },
+    enabled: {
+      type: DataTypes.BOOLEAN,
       allowNull: true
     }
   });

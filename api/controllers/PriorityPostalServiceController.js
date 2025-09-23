@@ -7,6 +7,7 @@ const {findOne} = require("waterline/lib/waterline/MetaModel");
 const req = require("express/lib/request");
 const sequelize = require('../models/index').sequelize;
 const Application = require('../models/index').Application;
+const ApplicationType = require('../models/index').ApplicationType;
 const UserDocumentCount = require('../models/index').UserDocumentCount;
 const ApplicationPaymentDetails = require('../models/index').ApplicationPaymentDetails;
 
@@ -20,7 +21,15 @@ let priorityPostalServiceController = {
       attributes: ['priority_post']
     });
 
+    const checkServiceIs = await ApplicationType.findOne({
+      where: {
+        id: 5
+      },
+      attributes: ['enabled']
+    });
+
     const priorityApp = userSelection?.priority_post;
+    const priorityServiceEnabled = checkServiceIs?.enabled;
 
     return res.view('applicationForms/priorityPostalService', {
       application_id:req.session.appId,
@@ -32,6 +41,7 @@ let priorityPostalServiceController = {
       submit_status: req.session.appSubmittedStatus,
       return_to_skip: false,
       user_data: HelperService.getUserData(req,res),
+      priorityServiceEnabled,
       user_selection: priorityApp
     });
   },
