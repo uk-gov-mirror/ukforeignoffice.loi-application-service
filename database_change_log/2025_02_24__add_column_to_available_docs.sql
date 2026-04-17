@@ -574,7 +574,7 @@ UPDATE public."AvailableDocuments" SET eligible_check_option_3 = null WHERE html
 UPDATE public."AvailableDocuments" SET issuing_authority_text = 'Your document must contain a wet ink signature or a wet ink/embossed seal and a date from the issuing authority.' WHERE html_id = 'doctors-medical';
 -- DRIVING LICENCE
 UPDATE public."AvailableDocuments" SET accept_text = 'Please confirm that you will send us:' WHERE html_id = 'driving-license';
-UPDATE public."AvailableDocuments" SET eligible_check_option_1 = 'A photocopy of your<span>certification required</span><span>custom text</span>' WHERE html_id = 'driving-license';
+UPDATE public."AvailableDocuments" SET eligible_check_option_1 = 'A photocopy of your <span>certification required</span><span>custom text</span>' WHERE html_id = 'driving-license';
 -- EDUCATION CERTIFICATE (UK)
 UPDATE public."AvailableDocuments" SET legalisation_clause = 'can be legalised if it is a <a href="https://www.gov.uk/find-a-regulated-qualification">regulated qualification</a> or if it has been awarded by a <a href="https://www.gov.uk/check-university-award-degree">recognised body</a>' WHERE html_id = 'educational-certificate-uk';
 UPDATE public."AvailableDocuments" SET accept_text = 'We accept the document in the following formats. Please select which one you will send:' WHERE html_id = 'educational-certificate-uk';
