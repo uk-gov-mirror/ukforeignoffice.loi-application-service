@@ -102,7 +102,7 @@
 <script>
 
   var sessionTimeoutWarning = <%= sails.config.session.cookie.timeoutWarning %>;
-  var loggedIn = <%- Boolean(req.session.passport) %>;
+  var loggedIn = <%- Boolean(req.session && req.session.passport) %>;
   var maxAgeMilliseconds = <%= sails.config.session.cookie.maxAge %>;
   var currentTime = Date.now();
   var expirationTime = currentTime + maxAgeMilliseconds;
